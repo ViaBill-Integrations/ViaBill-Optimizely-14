@@ -1,0 +1,180 @@
+﻿@model ViaBill.Commerce.Models.ViaBillLoginViewModel
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViaBill — Retrieve API Credentials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font: 'Inter', system-ui, sans-serif;
+  --bg:            #f7f6f2;
+  --surface:       #ffffff;
+  --border:        rgba(40,37,29,0.12);
+  --text:          #28251d;
+  --muted:         #7a7974;
+  --primary:       #01696f;
+  --primary-h:     #0c4e54;
+  --error-bg:      #fdf2f8;
+  --error-border:  rgba(161,44,123,0.25);
+  --error-text:    #a12c7b;
+  --success-bg:    #f2f8f2;
+  --success-bdr:   rgba(67,122,34,0.25);
+  --success-text:  #437a22;
+  --ease:          180ms cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{min-height:100dvh;font-family:var(--font);font-size:1rem;color:var(--text);
+  background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.5rem 1rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:.75rem;
+  box-shadow:0 4px 24px rgba(40,37,29,.09);padding:2rem;width:100%;max-width:440px}
+.logo{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.logo-text{font-size:1.125rem;font-weight:600}
+.logo-sub{font-size:.875rem;color:var(--muted);margin-top:1px}
+h1{font-size:1.25rem;font-weight:600;margin-bottom:.5rem}
+.subtitle{font-size:.875rem;color:var(--muted);line-height:1.5;margin-bottom:1.5rem}
+.form-group{margin-bottom:1rem}
+label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.5rem}
+input[type=email],input[type=password]{width:100%;padding:.6875rem 1rem;
+  border:1px solid var(--border);border-radius:.5rem;font-family:var(--font);
+  font-size:.9375rem;color:var(--text);background:var(--bg);
+  transition:border-color var(--ease),box-shadow var(--ease);outline:none}
+input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(1,105,111,.12)}
+input.err{border-color:var(--error-text)}
+.ferr{font-size:.8125rem;color:var(--error-text);margin-top:.375rem;display:block}
+.btn{width:100%;padding:.6875rem 1rem;background:var(--primary);color:#fff;
+  border:none;border-radius:.5rem;font-family:var(--font);font-size:.9375rem;
+  font-weight:500;cursor:pointer;transition:background var(--ease),transform var(--ease);
+  margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.btn:hover{background:var(--primary-h)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.65;cursor:not-allowed}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@@keyframes spin{to{transform:rotate(360deg)}}
+.alert{padding:.75rem 1rem;border-radius:.5rem;font-size:.875rem;margin-bottom:1rem;border:1px solid}
+.alert-err{background:var(--error-bg);border-color:var(--error-border);color:var(--error-text)}
+.ok-header{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;
+  background:var(--success-bg);border:1px solid var(--success-bdr);
+  border-radius:.5rem;margin-bottom:1.5rem;font-size:.875rem;
+  color:var(--success-text);font-weight:500}
+.note{font-size:.8125rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.clabel{font-size:.75rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem}
+.cbox{background:var(--bg);border:1px solid var(--border);border-radius:.5rem;
+  padding:.75rem 1rem;font-size:.8125rem;font-family:'Courier New',monospace;
+  color:var(--text);word-break:break-all;line-height:1.6;margin-bottom:.375rem}
+.cgroup{margin-bottom:1rem}
+.cpbtn{display:inline-flex;align-items:center;gap:.375rem;font-size:.8125rem;
+  color:var(--primary);font-family:var(--font);cursor:pointer;
+  background:none;border:none;padding:0;transition:color var(--ease)}
+.cpbtn:hover{color:var(--primary-h)}
+.cpbtn.done{color:var(--success-text)}
+.div{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+a.back{font-size:.875rem;color:var(--primary);text-decoration:none}
+a.back:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="ViaBill">
+      <rect width="32" height="32" rx="8" fill="#01696f"/>
+      <path d="M8 9L16 23L24 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <div class="logo-text">ViaBill</div>
+      <div class="logo-sub">Optimizely Commerce</div>
+    </div>
+  </div>
+  <h1>Retrieve API credentials</h1>
+  <p class="subtitle">Sign in with your ViaBill merchant account to retrieve your ApiKey, Secret, and PriceTag script for the payment settings.</p>
+
+  @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+  {
+    <div class="alert alert-err" role="alert">@Model.ErrorMessage</div>
+  }
+
+  @if (!Model.Success)
+  {
+    <form method="post" asp-action="Index" id="frm" novalidate>
+      @Html.AntiForgeryToken()
+      <div class="form-group">
+        <label for="Email">Email address</label>
+        <input type="email" id="Email" name="Email" value="@Model.Email"
+               autocomplete="email" placeholder="merchant@example.com"
+               class="@(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "err" : "")" />
+        @if (ViewData.ModelState["Email"]?.Errors.Count > 0)
+        { <span class="ferr">@ViewData.ModelState["Email"].Errors[0].ErrorMessage</span> }
+      </div>
+      <div class="form-group">
+        <label for="Password">Password</label>
+        <input type="password" id="Password" name="Password"
+               autocomplete="current-password" placeholder="••••••••"
+               class="@(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "err" : "")" />
+        @if (ViewData.ModelState["Password"]?.Errors.Count > 0)
+        { <span class="ferr">@ViewData.ModelState["Password"].Errors[0].ErrorMessage</span> }
+      </div>
+      <button type="submit" class="btn" id="btn">
+        <span class="spin" id="sp"></span>
+        <span id="bt">Retrieve credentials</span>
+      </button>
+    </form>
+  }
+
+  @if (Model.Success)
+  {
+    <div class="ok-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      Credentials retrieved successfully
+    </div>
+    <p class="note">Copy each value and paste it into <strong>Commerce Admin → Settings → Payments → ViaBill</strong>.</p>
+
+    <div class="cgroup">
+      <div class="clabel">API Key</div>
+      <div class="cbox" id="k">@Model.ApiKey</div>
+      <button class="cpbtn" onclick="cp('k',this)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy API Key
+      </button>
+    </div>
+    <div class="cgroup">
+      <div class="clabel">Secret</div>
+      <div class="cbox" id="s">@Model.Secret</div>
+      <button class="cpbtn" onclick="cp('s',this)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy Secret
+      </button>
+    </div>
+    <div class="cgroup">
+      <div class="clabel">PriceTag Script</div>
+      <div class="cbox" id="p">@Model.PriceTagScript</div>
+      <button class="cpbtn" onclick="cp('p',this)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy PriceTag Script
+      </button>
+    </div>
+    <hr class="div">
+    <a class="back" href="/viabill-login">← Retrieve for a different account</a>
+  }
+</div>
+<script>
+document.getElementById('frm')?.addEventListener('submit',function(){
+  var b=document.getElementById('btn'),sp=document.getElementById('sp'),t=document.getElementById('bt');
+  b.disabled=true; sp.style.display='block'; t.textContent='Connecting\u2026';
+});
+function cp(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent.trim()).then(function(){
+    var o=btn.innerHTML; btn.classList.add('done');
+    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Copied!';
+    setTimeout(function(){btn.classList.remove('done');btn.innerHTML=o;},2000);
+  });
+}
+</script>
+</body>
+</html>

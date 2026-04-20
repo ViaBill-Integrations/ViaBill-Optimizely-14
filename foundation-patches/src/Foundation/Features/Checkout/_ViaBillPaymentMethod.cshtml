@@ -1,0 +1,28 @@
+﻿@using Foundation.Features.Checkout.Payments
+@model ViaBillPaymentOption
+@Html.HiddenFor(model => model.PaymentMethodId)
+
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info square-box">
+            You will be redirected to ViaBill to complete your payment securely.
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.PriceTagScript))
+        {
+            <div class="viabill-pricetag-wrap">
+                <div data-view="payment"
+                    data-price="@Model.CheckoutTotal.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                    data-currency="@Model.CurrencyCode"
+                    data-country-code="@Model.CountryCode"
+                    data-language="@Model.Language"
+                    class="viabill-pricetag">
+                </div>
+            </div>
+
+            <script src="https://pricetag.viabill.com/script/@Model.PriceTagScript"></script>
+        }
+
+    </div>
+</div>        
+

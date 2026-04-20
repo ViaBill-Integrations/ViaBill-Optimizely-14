@@ -1,0 +1,440 @@
+@model Foundation.Features.Checkout.ViaBillOrderAdminViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "ViaBill Order Management — " + Model.OrderNumber;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f4f6f8;
+            color: #1a1a2e;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.10);
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin: 0 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+            h1 img {
+                height: 28px;
+            }
+
+        .order-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .4rem 1.5rem;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+            font-size: .9rem;
+        }
+
+            .order-meta dt {
+                color: #6b7280;
+                font-weight: 500;
+            }
+
+            .order-meta dd {
+                margin: 0;
+                font-weight: 600;
+            }
+
+        .status-badge {
+            display: inline-block;
+            padding: .2rem .7rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .status-authorized {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-partial-captured {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-captured {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-captured-refunded {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .status-refunded {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-unknown {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .highlight-blue {
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .highlight-green {
+            color: #065f46;
+            font-weight: 700;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 1.5rem 0 .75rem;
+            padding-bottom: .4rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .action-group {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+            .action-group h3 {
+                margin: 0 0 .5rem;
+                font-size: .95rem;
+                font-weight: 700;
+            }
+
+            .action-group p {
+                margin: 0 0 .8rem;
+                font-size: .85rem;
+                color: #6b7280;
+                line-height: 1.5;
+            }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            flex-wrap: wrap;
+        }
+
+            .form-row label {
+                font-size: .85rem;
+                font-weight: 500;
+                white-space: nowrap;
+            }
+
+            .form-row input[type="number"] {
+                width: 130px;
+                padding: .4rem .6rem;
+                border: 1px solid #d1d5db;
+                border-radius: 5px;
+                font-size: .9rem;
+            }
+
+        .btn {
+            padding: .45rem 1.1rem;
+            border: none;
+            border-radius: 5px;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter .15s;
+        }
+
+            .btn:hover {
+                filter: brightness(.92);
+            }
+
+            .btn:disabled {
+                opacity: .5;
+                cursor: not-allowed;
+            }
+
+        .btn-capture {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-refund {
+            background: #059669;
+            color: #fff;
+        }
+
+        .btn-void {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .btn-search {
+            background: #4b5563;
+            color: #fff;
+        }
+
+        .alert {
+            padding: .8rem 1rem;
+            border-radius: 6px;
+            font-size: .9rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .no-action {
+            font-size: .9rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .search-form {
+            display: flex;
+            gap: .6rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+            .search-form input[type="text"] {
+                flex: 1;
+                min-width: 180px;
+                padding: .45rem .7rem;
+                border: 1px solid #d1d5db;
+                border-radius: 5px;
+                font-size: .9rem;
+            }
+    </style>
+</head>
+<body>
+    <div class="card">
+
+        <h1>
+            ViaBill Order Managementt
+        </h1>
+
+        @* ── Order search ────────────────────────────────────────────── *@
+        <form method="get" action="/viabill/admin" class="search-form">
+            <input type="text"
+                   name="orderNumber"
+                   value="@Model.OrderNumber"
+                   placeholder="Order number e.g. PO22350"
+                   required />
+            <button type="submit" class="btn btn-search">Load Order</button>
+        </form>
+
+        @* ── Flash messages ──────────────────────────────────────────── *@
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="alert alert-success">✓ @Model.SuccessMessage</div>
+        }
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-error">✗ @Model.ErrorMessage</div>
+        }
+
+        @* ── Order detail ────────────────────────────────────────────── *@
+        @if (Model.OrderFound)
+        {
+            var statusClass = Model.PaymentStatus switch
+            {
+                "Authorized" => "status-authorized",
+                "Partially Captured" => "status-partial-captured",
+                "Captured" => "status-captured",
+                "Captured / Refunded" => "status-captured-refunded",
+                "Refunded" => "status-refunded",
+                "Cancelled" => "status-cancelled",
+                _ => "status-unknown"
+            };
+
+            <dl class="order-meta">
+                <dt>Order Number</dt>
+                <dd>@Model.OrderNumber</dd>
+
+                <dt>Order Status</dt>
+                <dd>@Model.OrderStatus</dd>
+
+                <dt>Payment Method</dt>
+                <dd>@Model.PaymentMethodName</dd>
+
+                <dt>Payment Status</dt>
+                <dd>
+                    <span class="status-badge @statusClass">@Model.PaymentStatus</span>
+                </dd>
+
+                <dt>Authorized Amount</dt>
+                <dd>@Model.TotalAuthorized.ToString("F2") @Model.Currency</dd>
+
+                @if (Model.CapturedSoFar > 0)
+                {
+                    <dt>Captured</dt>
+                    <dd>@Model.CapturedSoFar.ToString("F2") @Model.Currency</dd>
+
+                    @if (Model.RemainingCapture > 0)
+                    {
+                        <dt>Remaining to Capture</dt>
+                        <dd class="highlight-blue">@Model.RemainingCapture.ToString("F2") @Model.Currency</dd>
+                    }
+                }
+
+                @if (Model.RefundedSoFar > 0)
+                {
+                    <dt>Refunded</dt>
+                    <dd>@Model.RefundedSoFar.ToString("F2") @Model.Currency</dd>
+
+                    @if (Model.RemainingRefund > 0)
+                    {
+                        <dt>Remaining to Refund</dt>
+                        <dd class="highlight-green">@Model.RemainingRefund.ToString("F2") @Model.Currency</dd>
+                    }
+                }
+
+                <dt>Transaction ID</dt>
+                <dd style="font-size:.8rem;word-break:break-all;">@Model.TransactionId</dd>
+            </dl>
+
+            <div class="section-title">Available Actions</div>
+
+            @* ── CAPTURE ─────────────────────────────────────────────── *@
+            @if (Model.CanCapture)
+            {
+                var captureDescription = Model.CapturedSoFar > 0
+                ? $"Collect the next portion of the authorized funds. Already captured: {Model.CapturedSoFar:F2} {Model.Currency}. Leave amount blank to capture the remaining {Model.RemainingCapture:F2} {Model.Currency}."
+                : $"Collect the authorized funds. Leave amount blank to capture the full amount ({Model.RemainingCapture:F2} {Model.Currency}).";
+
+                <div class="action-group">
+                    <h3>Capture Payment</h3>
+                    <p>@captureDescription</p>
+                    <form method="post" action="/viabill/admin/capture">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderNumber" value="@Model.OrderNumber" />
+                        <div class="form-row">
+                            <label for="captureAmount">Amount (@Model.Currency):</label>
+                            <input type="number"
+                           id="captureAmount"
+                           name="amount"
+                           min="0.01"
+                           max="@Model.RemainingCapture.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                           step="0.01"
+                           placeholder="@Model.RemainingCapture.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" />
+                            <button type="submit" class="btn btn-capture">Capture</button>
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @* ── REFUND ──────────────────────────────────────────────── *@
+            @if (Model.CanRefund)
+            {
+                var refundDescription = Model.RefundedSoFar > 0
+                ? $"Return more funds to the customer. Already refunded: {Model.RefundedSoFar:F2} {Model.Currency}. Leave amount blank to refund the remaining {Model.RemainingRefund:F2} {Model.Currency}. Refunding the full remaining amount sets the order to Cancelled."
+                : $"Return funds to the customer. Leave amount blank to refund the full captured amount ({Model.RemainingRefund:F2} {Model.Currency}). A full refund sets the order to Cancelled.";
+
+                <div class="action-group">
+                    <h3>Refund Payment</h3>
+                    <p>@refundDescription</p>
+                    <form method="post" action="/viabill/admin/refund">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderNumber" value="@Model.OrderNumber" />
+                        <div class="form-row">
+                            <label for="refundAmount">Amount (@Model.Currency):</label>
+                            <input type="number"
+                           id="refundAmount"
+                           name="amount"
+                           min="0.01"
+                           max="@Model.RemainingRefund.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                           step="0.01"
+                           placeholder="@Model.RemainingRefund.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" />
+                            <button type="submit" class="btn btn-refund">Refund</button>
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @* ── VOID ────────────────────────────────────────────────── *@
+            @if (Model.CanVoid)
+            {
+                <div class="action-group">
+                    <h3>Void / Cancel Payment</h3>
+                    <p>
+                        Cancel the authorization and release the reserved funds back to the customer.
+                        This is only possible before any capture has been performed.
+                        The order status will be set to Cancelled.
+                    </p>
+                    <form method="post" action="/viabill/admin/void">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderNumber" value="@Model.OrderNumber" />
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-void">Void / Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @if (!Model.CanCapture && !Model.CanRefund && !Model.CanVoid)
+            {
+                <p class="no-action">
+                    No actions are available for this order in its current state
+                    (Payment status: @Model.PaymentStatus, Order status: @Model.OrderStatus).
+                </p>
+            }
+        }
+        else if (!string.IsNullOrEmpty(Model.OrderNumber) && string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-info">Enter an order number above and click Load Order.</div>
+        }
+
+    </div>
+</body>
+</html>

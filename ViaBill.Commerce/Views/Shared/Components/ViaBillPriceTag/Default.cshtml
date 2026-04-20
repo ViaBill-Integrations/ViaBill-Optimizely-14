@@ -1,0 +1,35 @@
+@model ViaBill.Commerce.Models.ViaBillPriceTagViewModel
+
+@if (Model.IsAvailable)
+{
+    @if (!string.IsNullOrEmpty(Model.DynamicPriceSelector))
+    {
+        <div class="viabill-pricetag"
+     data-view="@Model.DataView"
+     data-dynamic-price="@Model.DynamicPriceSelector"
+     data-currency="@Model.Currency"></div>
+    }
+    else
+    {
+        <div class="viabill-pricetag"
+     data-view="@Model.DataView"
+     data-price="@Model.StaticPrice?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+     data-currency="@Model.Currency"></div>
+    }
+
+    @* Inject the ViaBill loader script only once per page *@
+    @if (ViewData["ViaBillScriptLoaded"] == null)
+    {
+        ViewData["ViaBillScriptLoaded"] = true;
+        <script>
+            (function () {
+                var o = document.createElement('script');
+                o.type = 'text/javascript';
+                o.async = true;
+                o.src = 'https://pricetag-test.viabill.com/script/@Model.PriceTagScript';                
+                var s = document.getElementsByTagName('script')[0];
+                s.parentNode.insertBefore(o, s);
+            })();
+        </script>
+    }
+}
