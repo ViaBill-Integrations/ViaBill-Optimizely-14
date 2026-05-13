@@ -36,38 +36,98 @@ namespace ViaBill.Commerce.Services
         // ─────────────────────────────────────────────────────────────
 
         public async Task<ViaBillCheckoutResponse> AuthorizeAsync(
-    string apiKey,
-    string secret,
-    string transactionId,
-    decimal amount,
-    string currency,
-    string successUrl,
-    string cancelUrl,
-    string callbackUrl,
-    string fullName,
-    string email,
-    string phoneNumber,
-    string address,
-    string city,
-    string postalCode,
-    string country,
-    bool testMode = false,
-    bool debugEnabled = false)
-        {            
+            string apiKey,
+            string secret,
+            string transactionId,
+            decimal amount,
+            string currency,
+            string successUrl,
+            string cancelUrl,
+            string callbackUrl,
+            string fullName,
+            string email,
+            string phoneNumber,
+            string address,
+            string city,
+            string postalCode,
+            string country,
+            bool testMode = false,
+            bool debugEnabled = false)
+        {
+            static string AppendQueryParameter(string url, string key, string value)
+            {
+                var builder = new UriBuilder(url);
+                var queryToAppend = $"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}";
+
+                if (!string.IsNullOrEmpty(builder.Query) && builder.Query.Length > 1)
+                {
+                    builder.Query = builder.Query.TrimStart('?') + "&" + queryToAppend;
+                }
+                else
+                {
+                    builder.Query = queryToAppend;
+                }
+
+                return builder.Uri.ToString();
+            }            
+
+            static void ValidateRequiredSignatureField(string value, string fieldName)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException(
+                        $"ViaBill signature field '{fieldName}' cannot be null, empty, or whitespace.",
+                        fieldName);
+            }
+
+            if (amount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(amount), amount, "ViaBill amount must be greater than zero.");
+
             var amountStr = FormatAmount(amount);
             var orderNumber = transactionId;
 
-            successUrl = successUrl + "?transaction=" + Uri.EscapeDataString(transactionId);
-            cancelUrl = cancelUrl + "?transaction=" + Uri.EscapeDataString(transactionId);
+            successUrl = AppendQueryParameter(successUrl, "transaction", transactionId);
+            cancelUrl = AppendQueryParameter(cancelUrl, "transaction", transactionId);
 
-            LogDebug(debugEnabled, "[ViaBill] AuthorizeAsync called. TransactionId={TransactionId}, Amount={Amount}, Currency={Currency}, TestMode={TestMode}", transactionId, amountStr, currency, testMode);
-            LogDebug(debugEnabled, "[ViaBill] URLs — Success={SuccessUrl}, Cancel={CancelUrl}, Callback={CallbackUrl}",                 successUrl, cancelUrl, callbackUrl);
-            LogDebug(debugEnabled, "[ViaBill] Customer — FullName={FullName}, Email={Email}, Address={Address}, City={City}, PostalCode={PostalCode}, Country={Country}",                 fullName, email, address, city, postalCode, country);
+            ValidateRequiredSignatureField(apiKey, nameof(apiKey));
+            ValidateRequiredSignatureField(secret, nameof(secret));
+            ValidateRequiredSignatureField(transactionId, nameof(transactionId));
+            ValidateRequiredSignatureField(amountStr, nameof(amountStr));
+            ValidateRequiredSignatureField(currency, nameof(currency));
+            ValidateRequiredSignatureField(orderNumber, nameof(orderNumber));
+            ValidateRequiredSignatureField(successUrl, nameof(successUrl));
+            ValidateRequiredSignatureField(cancelUrl, nameof(cancelUrl));
+            ValidateRequiredSignatureField(callbackUrl, nameof(callbackUrl));
 
-            // SHA256 with # separators: apikey#amount#currency#transaction#order_number#success_url#cancel_url#secret
-            var signature = BuildSha256Signature(
-                apiKey, amountStr, currency, transactionId,
-                orderNumber, successUrl, cancelUrl, secret);
+            LogDebug(debugEnabled,
+                "[ViaBill] AuthorizeAsync called. TransactionId={TransactionId}, Amount={Amount}, Currency={Currency}, TestMode={TestMode}",
+                transactionId, amountStr, currency, testMode);
+
+            LogDebug(debugEnabled,
+                "[ViaBill] URLs — Success={SuccessUrl}, Cancel={CancelUrl}, Callback={CallbackUrl}",
+                successUrl, cancelUrl, callbackUrl);
+
+            LogDebug(debugEnabled,
+                "[ViaBill] Customer — FullName={FullName}, Email={Email}, Address={Address}, City={City}, PostalCode={PostalCode}, Country={Country}",
+                fullName, email, address, city, postalCode, country);
+
+            var signatureParts = new List<string>
+            {
+                apiKey,
+                amountStr,
+                currency,
+                transactionId,
+                orderNumber,
+                successUrl,
+                cancelUrl,
+                secret
+            };
+
+            if (testMode)
+            {
+                signatureParts.Add("true");
+            }
+
+            var signature = BuildSha256Signature(signatureParts.ToArray());
 
             LogDebug(debugEnabled, "[ViaBill] Signature computed: {Signature}", signature);
 
@@ -95,10 +155,12 @@ namespace ViaBill.Commerce.Services
                     Country = country
                 }
             };
-            
+
             var endpoint = $"{ViaBillConstants.CheckoutPath}{ViaBillConstants.AddonName}";
 
-            LogDebug(debugEnabled, "[ViaBill] Sending checkout request to ViaBill API endpoint: {Endpoint}", endpoint);
+            LogDebug(debugEnabled,
+                "[ViaBill] Sending checkout request to ViaBill API endpoint: {Endpoint}",
+                endpoint);
 
             ViaBillCheckoutResponse response;
             try
@@ -111,7 +173,11 @@ namespace ViaBill.Commerce.Services
                 throw;
             }
 
-            LogDebug(debugEnabled, "[ViaBill] AuthorizeAsync response received. IsSuccess={IsSuccess}, RedirectUrl={RedirectUrl}, FirstError={FirstError}", response?.IsSuccess, response?.RedirectUrl ?? "(null)", response?.FirstError?.Message ?? "(none)");
+            LogDebug(debugEnabled,
+                "[ViaBill] AuthorizeAsync response received. IsSuccess={IsSuccess}, RedirectUrl={RedirectUrl}, FirstError={FirstError}",
+                response?.IsSuccess,
+                response?.RedirectUrl ?? "(null)",
+                response?.FirstError?.Message ?? "(none)");
 
             return response;
         }        
